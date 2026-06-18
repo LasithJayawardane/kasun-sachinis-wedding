@@ -805,16 +805,32 @@ rsvpGroomBtn.addEventListener('click', () => {
 
 const WISHES_KEY = 'wedding_wishes_sachini_kasun_2026';
 
-function getWishes() {
+let globalWishes = [];
+
+async function fetchGlobalWishes() {
     try {
-        return JSON.parse(localStorage.getItem(WISHES_KEY)) || [];
+        const feed = document.getElementById('wishes-feed');
+        feed.innerHTML = '<p class="font-sans text-center" style="color: var(--text-muted); padding: 1.5rem 0;">Loading blessings... ✨</p>';
+        const res = await fetch('/api/wishes');
+        if (res.ok) {
+            globalWishes = await res.json();
+            renderWishes();
+        }
     } catch (e) {
-        return [];
+        console.error("Failed to load global wishes", e);
     }
 }
 
-function saveWishes(wishes) {
-    localStorage.setItem(WISHES_KEY, JSON.stringify(wishes));
+async function saveGlobalWishes(wishes) {
+    try {
+        await fetch('/api/wishes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(wishes)
+        });
+    } catch (e) {
+        console.error("Failed to save global wishes", e);
+    }
 }
 
 function formatTimestamp(ts) {
@@ -844,17 +860,16 @@ function buildWishCard(wish) {
     return card;
 }
 
-window.editWish = function(id) {
-    const wishes = getWishes();
-    const wishIndex = wishes.findIndex(w => w.id === id);
+window.editWish = async function(id) {
+    const wishIndex = globalWishes.findIndex(w => w.id === id);
     if (wishIndex === -1) return;
     
-    const newMsg = prompt("Edit your wish:", wishes[wishIndex].message);
+    const newMsg = prompt("Edit your wish:", globalWishes[wishIndex].message);
     if (newMsg !== null && newMsg.trim() !== "") {
-        wishes[wishIndex].message = newMsg.trim();
-        wishes[wishIndex].timestamp = Date.now(); // update timestamp on edit
-        saveWishes(wishes);
-        renderWishes();
+        globalWishes[wishIndex].message = newMsg.trim();
+        globalWishes[wishIndex].timestamp = Date.now(); // update timestamp on edit
+        renderWishes(); // Optimistic update
+        await saveGlobalWishes(globalWishes);
     }
 };
 
@@ -870,9 +885,8 @@ function escapeHTML(str) {
 function renderWishes() {
     const feed = document.getElementById('wishes-feed');
     feed.innerHTML = '';
-    const wishes = getWishes();
 
-    if (wishes.length === 0) {
+    if (!globalWishes || globalWishes.length === 0) {
         feed.innerHTML = `
             <p class="font-sans text-center" style="color: var(--text-muted); font-size: 0.88rem; padding: 1.5rem 0;">
                 Be the first to send your blessings! ✨
@@ -882,7 +896,7 @@ function renderWishes() {
     }
 
     // Render most recent first
-    [...wishes].reverse().forEach(wish => {
+    [...globalWishes].reverse().forEach(wish => {
         feed.appendChild(buildWishCard(wish));
     });
 }
@@ -898,15 +912,16 @@ wishesForm.addEventListener('submit', (e) => {
 
     if (!name || !message) return;
 
-    const wishes = getWishes();
-    wishes.push({ 
+    globalWishes.push({ 
         id: Date.now().toString(),
         name, 
         message, 
         timestamp: Date.now(),
         isUser: true 
     });
-    saveWishes(wishes);
+    
+    renderWishes(); // Optimistic UI update
+    saveGlobalWishes(globalWishes);
 
     nameEl.value = '';
     msgEl.value = '';
