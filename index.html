@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="You are cordially invited to the wedding of Sachini & Kasun. July 31, 2026. Join us for a magical starry night celebration.">
+    <title>Sachini & Kasun's Wedding Invitation</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Great+Vibes&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background starfield canvas (behind content) -->
+    <canvas id="starfield"></canvas>
+
+    <!-- Foreground petal canvas (over all content, pointer-events: none) -->
+    <canvas id="petal-canvas"></canvas>
+    
+    <!-- Background Music -->
+    <!-- You can replace 'music.mp3' in the project folder with your own song! -->
+    <!-- If 'music.mp3' is not found, it will automatically fallback to the procedural harp music. -->
+    <audio id="custom-audio" src="music.mp3" loop preload="auto"></audio>
+    <!-- Floating Audio Control Button -->
+    <button id="music-toggle" class="music-btn paused" aria-label="Toggle Music">
+        <div class="music-note-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="#FFD700" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+            </svg>
+        </div>
+        <div class="music-waves">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </button>
+
+    <!-- Floating Theme Toggle (Light ↔ Dark) -->
+    <button id="theme-toggle" class="theme-btn" aria-label="Switch to dark mode">
+        <!-- Moon: shown in light mode to invite switching to dark -->
+        <svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <!-- Sun: shown in dark mode to invite switching to light -->
+        <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1"  x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22"  x2="5.64"  y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1"  y1="12" x2="3"  y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22"  y1="19.78" x2="5.64"  y2="18.36"/>
+            <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
+        </svg>
+    </button>
+
+    <!-- Splash Screen (Autoplay Music & Intro) -->
+    <div id="splash-screen">
+
+        <!-- Pink decorative circles / rings around the card -->
+        <div class="splash-ring splash-ring-1"></div>
+        <div class="splash-ring splash-ring-2"></div>
+        <div class="splash-ring splash-ring-3"></div>
+
+        <!-- 3D Animated Floating Bubbles/Petals -->
+        <div class="splash-bubble splash-bubble-1"></div>
+        <div class="splash-bubble splash-bubble-2"></div>
+        <div class="splash-bubble splash-bubble-3"></div>
+        <div class="splash-bubble splash-bubble-4"></div>
+        <div class="splash-bubble splash-bubble-5"></div>
+        <div class="splash-bubble splash-bubble-6"></div>
+        <div class="splash-bubble splash-bubble-7"></div>
+        <div class="splash-bubble splash-bubble-8"></div>
+        <div class="splash-bubble splash-bubble-9"></div>
+        <div class="splash-bubble splash-bubble-10"></div>
+
+        <div class="splash-content new-splash-card">
+            <div class="splash-badge">
+                <span class="splash-badge-dot"></span>
+                <span>WEDDING INVITATION</span>
+            </div>
+            
+            <h2 class="splash-invited-text font-sans">YOU ARE INVITED</h2>
+            
+            <div class="splash-names-stack">
+                <div class="splash-name font-script">Sachini</div>
+                <div class="splash-amp font-script">&</div>
+                <div class="splash-name font-script">Kasun</div>
+            </div>
+            
+            <div class="splash-divider-line">
+                <span class="splash-dot"></span>
+                <span class="splash-line"></span>
+                <span class="splash-dot"></span>
+            </div>
+            
+            <p class="splash-sub-text font-sans">
+                Join us as we celebrate love, joy, and<br>unforgettable moments together
+            </p>
+            
+            <button id="enter-btn" class="btn-splash-pill">
+                OPEN INVITATION &rarr;
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Web App Container (hidden until splash screen is dismissed) -->
+    <div id="app-container" class="hidden">
+        
+        <!-- 1. Hero Section -->
+        <header id="hero" class="section">
+            <div class="hero-bg-anim"></div>
+            <div class="hero-content text-center">
+                <span class="invited-text font-serif gold-text animated-fade">YOU ARE INVITED</span>
+                <h1 class="names font-script gold-gradient-text animated-scale">Sachini & Kasun</h1>
+                <p class="hero-date font-serif gold-text">JULY 31, 2026</p>
+            </div>
+            <div class="scroll-indicator">
+                <p class="font-sans">Scroll Down</p>
+                <div class="chevron"></div>
+            </div>
+        </header>
+
+        <main>
+            <!-- 2. Countdown Timer Section -->
+            <section id="countdown" class="section scroll-reveal">
+                <h2 class="section-title font-serif gold-text">The Countdown</h2>
+                <p class="subtitle font-sans">Counting down the days to our forever</p>
+                
+                <div class="countdown-display">
+                    <div class="time-card glass-card">
+                        <span id="days" class="time-num gold-gradient-text">00</span>
+                        <span class="time-label font-sans">Days</span>
+                    </div>
+                    <div class="time-card glass-card">
+                        <span id="hours" class="time-num gold-gradient-text">00</span>
+                        <span class="time-label font-sans">Hours</span>
+                    </div>
+                    <div class="time-card glass-card">
+                        <span id="minutes" class="time-num gold-gradient-text">00</span>
+                        <span class="time-label font-sans">Mins</span>
+                    </div>
+                    <div class="time-card glass-card">
+                        <span id="seconds" class="time-num gold-gradient-text">00</span>
+                        <span class="time-label font-sans">Secs</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Wedding Details Card -->
+            <section id="details" class="section scroll-reveal">
+                <h2 class="section-title font-serif gold-text">Wedding Details</h2>
+                <div class="details-container glass-card">
+                    <div class="details-glow"></div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <svg viewBox="0 0 24 24" width="28" height="28">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="#FFD700" stroke-width="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6" stroke="#FFD700" stroke-width="2"/>
+                                <line x1="8" y1="2" x2="8" y2="6" stroke="#FFD700" stroke-width="2"/>
+                                <line x1="3" y1="10" x2="21" y2="10" stroke="#FFD700" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="detail-info">
+                            <h3 class="font-serif gold-text">Date</h3>
+                            <p class="font-sans">Thursday, July 31, 2026</p>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <svg viewBox="0 0 24 24" width="28" height="28">
+                                <circle cx="12" cy="12" r="10" fill="none" stroke="#FFD700" stroke-width="2"/>
+                                <polyline points="12 6 12 12 16 14" fill="none" stroke="#FFD700" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="detail-info">
+                            <h3 class="font-serif gold-text">Time</h3>
+                            <p class="font-sans">10:00 AM – 04:00 PM</p>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <svg viewBox="0 0 24 24" width="28" height="28">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="none" stroke="#FFD700" stroke-width="2"/>
+                                <circle cx="12" cy="9" r="3" fill="#FFD700"/>
+                            </svg>
+                        </div>
+                        <div class="detail-info">
+                            <h3 class="font-serif gold-text">Venue</h3>
+                            <p class="font-sans font-weight-bold">Amaya Green Hotel</p>
+                            <p class="font-sans venue-sub">Weeragula, Yakkala, Sri Lanka</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Location Section -->
+            <section id="location" class="section scroll-reveal">
+                <h2 class="section-title font-serif gold-text venue-title">The Venue Location</h2>
+                <p class="venue-subtitle font-sans">FIND YOUR WAY TO OUR CELEBRATION AT AMAYA GREEN</p>
+
+                <div class="venue-card glass-card">
+                    <!-- Left: Live Google Maps embed -->
+                    <div class="venue-map-wrap">
+                        <iframe
+                            id="venue-map"
+                            title="Amaya Green Hotel – Weeragula"
+                            src="https://maps.google.com/maps?q=Amaya+Green+Hotel+Weeragula+Sri+Lanka&output=embed&z=15"
+                            width="100%"
+                            height="100%"
+                            style="border:0;"
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+
+                    <!-- Right: Venue info + buttons -->
+                    <div class="venue-info">
+                        <h3 class="venue-name font-serif gold-text">Amaya Green Hotel</h3>
+                        <p class="venue-address font-sans">Weeragula, Sri Lanka</p>
+
+                        <div class="venue-btns">
+                            <!-- Get Directions -->
+                            <a  href="https://www.google.com/maps/search/?api=1&query=Amaya+Green+Hotel+Weeragula"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="venue-btn venue-btn-primary">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                    <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48v15.26c0 .28.24.52.52.52l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.52c0-.28-.24-.52-.52-.52zM15 19l-6-2.11V5l6 2.11V19z"/>
+                                </svg>
+                                GET DIRECTIONS
+                            </a>
+
+                            <!-- Show QR Code toggle -->
+                            <button id="qr-toggle-btn" class="venue-btn venue-btn-outline" onclick="toggleQR()">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                    <path d="M3 3h7v7H3zm1 1v5h5V4zm1 1h3v3H5zM14 3h7v7h-7zm1 1v5h5V4zm1 1h3v3h-3zM3 14h7v7H3zm1 1v5h5v-5zm1 1h3v3H5zM14 14h3v3h-3zm4 0h3v3h-3zm-4 4h3v3h-3zm4 0h3v3h-3z"/>
+                                </svg>
+                                SHOW QR CODE
+                            </button>
+                        </div>
+
+                        <!-- QR Code panel (hidden by default) -->
+                        <div id="qr-panel" class="qr-panel" style="display:none;">
+                            <img
+                                src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&color=C2527A&bgcolor=FFF5F8&data=https://www.google.com/maps/search/?api=1%26query=Amaya+Green+Hotel+Weeragula"
+                                alt="QR Code to venue"
+                                class="qr-img"
+                                id="venue-qr-img">
+                            <p class="qr-label font-sans">Scan to open in Maps</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- 5. RSVP Section -->
+            <section id="rsvp" class="section scroll-reveal">
+                <h2 class="section-title font-serif gold-text">RSVP</h2>
+                <p class="subtitle font-sans">Kindly respond by <strong>July 20, 2026</strong></p>
+                
+                <div class="rsvp-card glass-card">
+                    <div class="rsvp-form-container">
+                        <h3 class="rsvp-form-title font-serif gold-text text-center">Confirm Attendance</h3>
+                        
+                        <div class="form-group">
+                            <label for="rsvp-name" class="font-sans gold-text">Your Name</label>
+                            <input type="text" id="rsvp-name" placeholder="Enter your full name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rsvp-companions" class="font-sans gold-text">Accompanying Guests (Optional)</label>
+                            <input type="text" id="rsvp-companions" placeholder="e.g., Wife, Mother, John Doe">
+                            <p class="font-sans text-muted" style="font-size: 0.75rem; margin-top: 5px;">Leave blank if you are attending alone.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-sans gold-text block-label">Are you attending?</label>
+                            <div class="rsvp-options">
+                                <label class="radio-option">
+                                    <input type="radio" name="rsvp-status" value="attending" checked>
+                                    <span class="custom-radio"></span>
+                                    <span class="radio-label">I'm Coming! 🎉</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="rsvp-status" value="declined">
+                                    <span class="custom-radio"></span>
+                                    <span class="radio-label">I'm Not Coming 😔</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="rsvp-button-grid">
+                            <button type="button" id="rsvp-bride" class="btn btn-primary rsvp-btn">
+                                <span>RSVP to Bride (Sachini)</span>
+                                <span class="whatsapp-badge"></span>
+                            </button>
+                            <button type="button" id="rsvp-groom" class="btn btn-primary rsvp-btn">
+                                <span>RSVP to Groom (Kasun)</span>
+                                <span class="whatsapp-badge"></span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="direct-contact text-center">
+                        <p class="font-sans text-muted">Or contact directly:</p>
+                        <div class="contact-links">
+                            <a href="tel:0776478413" class="gold-text">Sachini: 077 647 8413</a>
+                            <a href="tel:+817023682511" class="gold-text">Kasun: +81 70-2368-2511</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Wishes Section -->
+            <section id="wishes" class="section scroll-reveal">
+                <h2 class="section-title font-serif gold-text">Wishes & Blessings</h2>
+                <p class="subtitle font-sans">Share your blessings with the happy couple</p>
+                
+                <div class="wishes-card glass-card">
+                    <form id="wishes-form">
+                        <div class="form-group">
+                            <label for="wish-name" class="font-sans gold-text">Your Name</label>
+                            <input type="text" id="wish-name" placeholder="Enter your name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="wish-message" class="font-sans gold-text">Your Message</label>
+                            <textarea id="wish-message" rows="3" placeholder="Write your warm wishes here..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-secondary submit-btn">
+                            <span>Send Blessing</span>
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="send-icon">
+                                <line x1="22" y1="2" x2="11" y2="13" />
+                                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                            </svg>
+                        </button>
+                    </form>
+                    
+                    <div class="wishes-divider"></div>
+                    
+                    <!-- Wishes Feed -->
+                    <div class="wishes-feed-container">
+                        <div id="wishes-feed" class="wishes-feed">
+                            <!-- Wishes populated by Javascript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 8. Final Thank You Section -->
+            <footer id="thank-you" class="section text-center scroll-reveal">
+                <div class="thank-you-content glass-card">
+                    <span class="thank-you-heart font-script gold-text">Sachini & Kasun</span>
+                    <h2 class="font-serif gold-gradient-text uppercase-title">Thank You</h2>
+                    <p class="font-sans">We look forward to celebrating our special day with you. Your blessings and presence mean the world to us.</p>
+                    <div class="divider-gold">
+                        <span class="star-icon">✦</span>
+                    </div>
+                    <p class="tagline font-serif">#SachiniAndKasun</p>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- JS Logic -->
+    <script src="script.js"></script>
+</body>
+</html>
