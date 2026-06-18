@@ -756,8 +756,7 @@ enterBtn.addEventListener('click', () => {
 const rsvpBrideBtn = document.getElementById('rsvp-bride');
 const rsvpGroomBtn = document.getElementById('rsvp-groom');
 
-function buildWhatsAppMessage() {
-    const name = document.getElementById('rsvp-name').value.trim() || 'A Guest';
+function buildWhatsAppMessage(name) {
     const companions = document.getElementById('rsvp-companions').value.trim();
     const status = document.querySelector('input[name="rsvp-status"]:checked').value;
     const attending = status === 'attending';
@@ -775,16 +774,26 @@ function buildWhatsAppMessage() {
 }
 
 rsvpBrideBtn.addEventListener('click', () => {
+    const name = document.getElementById('rsvp-name').value.trim();
+    if (!name) {
+        alert("Please enter your name before sending your RSVP.");
+        return;
+    }
     triggerConfetti();
-    const msg = buildWhatsAppMessage();
+    const msg = buildWhatsAppMessage(name);
     setTimeout(() => {
         window.open(`https://wa.me/94776478413?text=${msg}`, '_blank');
     }, 700);
 });
 
 rsvpGroomBtn.addEventListener('click', () => {
+    const name = document.getElementById('rsvp-name').value.trim();
+    if (!name) {
+        alert("Please enter your name before sending your RSVP.");
+        return;
+    }
     triggerConfetti();
-    const msg = buildWhatsAppMessage();
+    const msg = buildWhatsAppMessage(name);
     setTimeout(() => {
         window.open(`https://wa.me/817023682511?text=${msg}`, '_blank');
     }, 700);
@@ -810,21 +819,44 @@ function saveWishes(wishes) {
 
 function formatTimestamp(ts) {
     const d = new Date(ts);
-    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+    return d.toLocaleString('en-US', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
 }
 
 function buildWishCard(wish) {
     const card = document.createElement('div');
     card.className = 'wish-card';
+    
+    let editBtnHTML = '';
+    if (wish.isUser) {
+        editBtnHTML = `<button onclick="editWish('${wish.id}')" style="background: none; border: none; color: var(--gold-primary); cursor: pointer; font-size: 0.75rem; margin-left: 8px; padding: 0; text-decoration: underline;">Edit</button>`;
+    }
+
     card.innerHTML = `
         <div class="wish-header">
             <span class="wish-author gold-text font-serif">${escapeHTML(wish.name)}</span>
-            <span class="wish-time font-sans">${formatTimestamp(wish.timestamp)}</span>
+            <div style="display: flex; align-items: center;">
+                <span class="wish-time font-sans">${formatTimestamp(wish.timestamp)}</span>
+                ${editBtnHTML}
+            </div>
         </div>
         <p class="wish-text font-sans">${escapeHTML(wish.message)}</p>
     `;
     return card;
 }
+
+window.editWish = function(id) {
+    const wishes = getWishes();
+    const wishIndex = wishes.findIndex(w => w.id === id);
+    if (wishIndex === -1) return;
+    
+    const newMsg = prompt("Edit your wish:", wishes[wishIndex].message);
+    if (newMsg !== null && newMsg.trim() !== "") {
+        wishes[wishIndex].message = newMsg.trim();
+        wishes[wishIndex].timestamp = Date.now(); // update timestamp on edit
+        saveWishes(wishes);
+        renderWishes();
+    }
+};
 
 function escapeHTML(str) {
     return str
@@ -867,7 +899,13 @@ wishesForm.addEventListener('submit', (e) => {
     if (!name || !message) return;
 
     const wishes = getWishes();
-    wishes.push({ name, message, timestamp: Date.now() });
+    wishes.push({ 
+        id: Date.now().toString(),
+        name, 
+        message, 
+        timestamp: Date.now(),
+        isUser: true 
+    });
     saveWishes(wishes);
 
     nameEl.value = '';

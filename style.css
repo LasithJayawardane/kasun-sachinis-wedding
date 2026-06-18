@@ -799,7 +799,7 @@ html, body {
     position: absolute;
     inset: -15%; /* Oversized for deep panning */
     z-index: 0;
-    background: url('wedding-car.png') center 60% / cover no-repeat;
+    background: url('sl-couple.png') center 60% / cover no-repeat;
     opacity: 0.35;
     pointer-events: none;
     
@@ -841,7 +841,25 @@ html, body {
 .hero-date {
     font-size: 1.25rem;
     letter-spacing: 0.2em;
-    margin-top: 1rem;
+    margin-top: 2.5rem;
+    
+    /* Liquid Glass Round Box */
+    display: inline-block;
+    padding: 0.6rem 2.2rem;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 24px rgba(186, 73, 107, 0.15);
+    color: var(--text-dark);
+    font-weight: 600;
+}
+[data-theme="dark"] .hero-date {
+    background: rgba(10, 10, 30, 0.5);
+    border-color: rgba(255, 215, 0, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    color: var(--gold-primary);
 }
 /* Hero content must sit above the ::before background layer */
 .hero-content {
